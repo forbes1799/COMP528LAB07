@@ -3,7 +3,7 @@
 #include<stdlib.h>
 #include<time.h>
 
-#define MAXSIZE 32			/* change the size of matrices as required*/
+#define MAXSIZE 8			/* change the size of matrices as required*/
 
 int X[MAXSIZE][MAXSIZE], Y[MAXSIZE][MAXSIZE], Z[MAXSIZE][MAXSIZE];
 
@@ -53,8 +53,6 @@ int main(int argc, char *argv[])
     from = my_rank * part_size;
     to = (my_rank+1) * part_size;
 
-    printf("my_rank %d, from: %d to: %d", my_rank, from, to);
-
     /*if root rank, fill the matrices X and Y*/
 
     if(my_rank == root){
@@ -65,7 +63,7 @@ int main(int argc, char *argv[])
     }
   
     /*What's the difference here between MPI_Bcast and MPI_Scatter*/
-    MPI_Bcast(Y, MAXSIZE*MAXSIZE, MPI_INT, root, MPI_COMM_WORLD);
+    MPI_Bcast(Y, MAXSIZE * MAXSIZE, MPI_INT, root, MPI_COMM_WORLD);
 
     
 
@@ -76,9 +74,9 @@ int main(int argc, char *argv[])
     Consider NUMA, consider the chunk size of your schedules. Experiment!!!!!!!*/
     for (i=from; i<to; i++){ 
         for (j=0; j<MAXSIZE; j++) {
-            localZ[i][j]=0;
+            localZ[i - from][j]=0;
             for (k=0; k<MAXSIZE; k++){
-                localZ[i][j] += localX[i][k]*Y[k][j];
+                localZ[i - from][j] += localX[i - from][k]*Y[k][j];
             }
         }
     }
@@ -89,11 +87,12 @@ int main(int argc, char *argv[])
     /*if root print mat Z*/
     if (my_rank == 0){
         print_matrix(Z);
+        printf("\nProgram took %lf milliseconds\n", (tEnd - tStart) * 1000);
     }
 
     tEnd = MPI_Wtime();
 
-    printf("\nProgram took %lf milliseconds\n", (tEnd - tStart) * 1000);
+    
 
     MPI_Finalize();
     return 0;
