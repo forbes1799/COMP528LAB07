@@ -73,7 +73,6 @@ int main(void){
 
     while(currB < batchPerProcess){
 
-        //TASK: After MPI is working, use OpenMP to parallelise this for loop
         for(int i = 0; i < N; i++){
             for(int j = 0; j < N; j++){
                 lRes[currB][i][j] = 0; 
